@@ -1,15 +1,14 @@
 package com.example.portfolio.config;
 
 import org.springframework.amqp.core.*;
-import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
+import org.springframework.retry.interceptor.RetryInterceptorBuilder;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
 import org.springframework.retry.interceptor.RetryOperationsInterceptor;
 
 /**
@@ -34,7 +33,7 @@ import org.springframework.retry.interceptor.RetryOperationsInterceptor;
  * </pre>
  *
  * <h3>Message format</h3>
- * Messages are serialized as JSON via {@link Jackson2JsonMessageConverter}.
+ * Messages are serialized as JSON via {@link JacksonJsonMessageConverter}.
  * The {@code __TypeId__} header carries the fully-qualified class name so
  * the consumer can deserialize without extra configuration.
  *
@@ -109,8 +108,8 @@ public class RabbitMQConfig {
      * Spring Boot auto-wires this bean into the auto-configured {@link RabbitTemplate}.
      */
     @Bean
-    public Jackson2JsonMessageConverter jsonMessageConverter() {
-        return new Jackson2JsonMessageConverter();
+    public JacksonJsonMessageConverter jsonMessageConverter() {
+        return new JacksonJsonMessageConverter();
     }
 
     /**
@@ -119,7 +118,7 @@ public class RabbitMQConfig {
      */
     @Bean
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory,
-                                         Jackson2JsonMessageConverter jsonMessageConverter) {
+                                         JacksonJsonMessageConverter jsonMessageConverter) {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(jsonMessageConverter);
         return template;
@@ -136,10 +135,16 @@ public class RabbitMQConfig {
      */
    @Bean
     public RetryOperationsInterceptor retryInterceptor() {
+        RejectAndDontRequeueRecoverer amqpRecoverer = new RejectAndDontRequeueRecoverer();
+        org.springframework.retry.interceptor.MethodInvocationRecoverer<?> recoverer =
+                (args, cause) -> {
+                    amqpRecoverer.recover(null, cause);
+                    return null;
+                };
         return RetryInterceptorBuilder.stateless()
                 .maxAttempts(3)
-                .backOffOptions(1_000, 2.0, 4_000)   // initialMs, multiplier, maxMs
-                .recoverer(new RejectAndDontRequeueRecoverer())
+                .backOffOptions(1_000, 2.0, 4_000)
+                .recoverer(recoverer)
                 .build();
     }
 
@@ -151,7 +156,7 @@ public class RabbitMQConfig {
     @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
             ConnectionFactory connectionFactory,
-            Jackson2JsonMessageConverter jsonMessageConverter,
+            JacksonJsonMessageConverter jsonMessageConverter,
             RetryOperationsInterceptor retryInterceptor) {
 
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
