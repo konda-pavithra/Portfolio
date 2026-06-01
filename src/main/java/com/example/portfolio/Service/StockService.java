@@ -40,7 +40,7 @@ public class StockService {
 
 
     public void refreshQuotes() {
-        /*logger.info("Refreshing Nifty 50 quotes — fetching {} symbols from Yahoo Finance",
+        logger.info("Refreshing Nifty 50 quotes — fetching {} symbols from Yahoo Finance",
                 NseStocks.SYMBOLS.size());
 
         try {
@@ -70,7 +70,7 @@ public class StockService {
         } catch (Exception ex) {
             logger.error("Unexpected error during quote refresh: {}", ex.getMessage(), ex);
             // Cache remains unchanged — polling clients continue to see last good data
-        }*/
+        }
     }
 
     // -----------------------------------------------------------------------
