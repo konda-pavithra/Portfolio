@@ -1,13 +1,14 @@
 package com.example.portfolio.Service;
 
-import com.example.portfolio.cilent.YahooFinanceClient;
-import com.example.portfolio.cilent.dto.YahooFinanceQuoteResponse.YahooQuote;
+import com.example.portfolio.cilent.YahooChartClient;
+import com.example.portfolio.cilent.dto.YahooChartResponse.Meta;
 import com.example.portfolio.constants.NseStocks;
 import com.example.portfolio.dto.StockQuote;
 import com.example.portfolio.dto.StockTickerResponse;
 import com.example.portfolio.producer.StockPriceKafkaProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
@@ -24,7 +25,7 @@ public class StockService {
 
     private static final ZoneId IST = ZoneId.of("Asia/Kolkata");
 
-    private final YahooFinanceClient yahooFinanceClient;
+    private final YahooChartClient yahooChartClient;
     private final StockPriceKafkaProducer kafkaProducer;
 
     // ── In-memory cache ──────────────────────────────────────────────────────
@@ -32,22 +33,22 @@ public class StockService {
     private volatile LocalDateTime    lastFetchedAt = null;
     private volatile String           dataStatus    = "UNAVAILABLE";
 
-    public StockService(YahooFinanceClient yahooFinanceClient,
+    public StockService(YahooChartClient yahooChartClient,
                         StockPriceKafkaProducer kafkaProducer) {
-        this.yahooFinanceClient = yahooFinanceClient;
-        this.kafkaProducer      = kafkaProducer;
+        this.yahooChartClient = yahooChartClient;
+        this.kafkaProducer    = kafkaProducer;
     }
 
-
+    @Scheduled(fixedDelayString   = "${stock.refresh.interval-ms:30000}",
+               initialDelayString = "${stock.refresh.initial-delay-ms:5000}")
     public void refreshQuotes() {
-        logger.info("Refreshing Nifty 50 quotes — fetching {} symbols from Yahoo Finance",
-                NseStocks.SYMBOLS.size());
+        logger.info("Refreshing Nifty 50 quotes from Yahoo Finance chart API");
 
         try {
-            List<YahooQuote> rawQuotes = yahooFinanceClient.fetchQuotes(NseStocks.SYMBOLS);
+            List<Meta> rawQuotes = yahooChartClient.fetchQuotes(NseStocks.SYMBOLS);
 
             if (rawQuotes.isEmpty()) {
-                logger.warn("Yahoo Finance returned 0 quotes — keeping previous cache");
+                logger.warn("Yahoo chart API returned 0 quotes — keeping previous cache");
                 return;
             }
 
@@ -108,27 +109,27 @@ public class StockService {
                 .build();
     }
 
-    // ── Mapping: YahooQuote → StockQuote ────────────────────────────────────
+    // ── Mapping: Yahoo Chart Meta → StockQuote ───────────────────────────────
 
-    private StockQuote mapToStockQuote(YahooQuote yq) {
-        String symbol        = yq.getSymbol() != null ? yq.getSymbol() : "UNKNOWN";
-        String displaySymbol = symbol.replace(".NS", "");
-        double change        = safeDouble(yq.getRegularMarketChange());
+    private StockQuote mapToStockQuote(Meta m) {
+        String symbol        = m.getSymbol() != null ? m.getSymbol() : "UNKNOWN";
+        String displaySymbol = symbol.replace(".NS", "").replace(".BO", "");
+        double change        = m.change();
 
         return StockQuote.builder()
                 .symbol(symbol)
                 .displaySymbol(displaySymbol)
-                .companyName(resolveCompanyName(symbol, yq.getLongName(), yq.getShortName()))
-                .price(safeDouble(yq.getRegularMarketPrice()))
+                .companyName(resolveCompanyName(symbol, m.getLongName(), m.getShortName()))
+                .price(m.price())
                 .change(change)
-                .changePercent(safeDouble(yq.getRegularMarketChangePercent()))
-                .open(safeDouble(yq.getRegularMarketOpen()))
-                .high(safeDouble(yq.getRegularMarketDayHigh()))
-                .low(safeDouble(yq.getRegularMarketDayLow()))
-                .previousClose(safeDouble(yq.getRegularMarketPreviousClose()))
-                .volume(safeLong(yq.getRegularMarketVolume()))
-                .currency(yq.getCurrency() != null ? yq.getCurrency() : "INR")
-                .marketState(yq.getMarketState() != null ? yq.getMarketState() : "UNKNOWN")
+                .changePercent(m.changePct())
+                .open(m.open())
+                .high(m.high())
+                .low(m.low())
+                .previousClose(m.previousClose())
+                .volume(m.volume())
+                .currency(m.getCurrency() != null ? m.getCurrency() : "INR")
+                .marketState(m.getMarketState() != null ? m.getMarketState() : "UNKNOWN")
                 .gainDay(change >= 0)
                 .lastUpdated(LocalDateTime.now())
                 .build();
@@ -136,7 +137,7 @@ public class StockService {
 
     private String resolveCompanyName(String symbol, String longName, String shortName) {
         String curated = NseStocks.DISPLAY_NAMES.get(symbol);
-        if (curated  != null) return curated;
+        if (curated   != null) return curated;
         if (longName  != null && !longName.isBlank())  return longName;
         if (shortName != null && !shortName.isBlank()) return shortName;
         return symbol.replace(".NS", "");
@@ -167,9 +168,4 @@ public class StockService {
     public String getDataStatus() {
         return dataStatus;
     }
-
-    // ── Null-safe helpers ────────────────────────────────────────────────────
-
-    private static double safeDouble(Double value) { return value != null ? value : 0.0; }
-    private static long   safeLong  (Long   value) { return value != null ? value : 0L;  }
 }

@@ -108,7 +108,7 @@ public class PortfolioRealtimeService {
 
 
     @Scheduled(fixedDelayString = "${stock.refresh.interval-ms:30000}",
-               initialDelayString = "${stock.refresh.interval-ms:30000}")
+               initialDelayString = "${stock.refresh.initial-delay-ms:5000}")
     public void sendHeartbeats() {
         if (activeEmitters.isEmpty()) return;
 
