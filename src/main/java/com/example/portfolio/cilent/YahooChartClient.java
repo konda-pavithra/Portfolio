@@ -11,6 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import org.springframework.web.util.UriUtils;
+
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -37,7 +40,6 @@ import java.util.concurrent.Executors;
 public class YahooChartClient {
 
     private static final String BASE_URL = "https://query2.finance.yahoo.com/v8/finance/chart/";
-    private static final String PARAMS   = "?interval=1d&range=1d";
 
     // 10 parallel threads — fast enough for 50 symbols without hammering Yahoo
     private static final ExecutorService POOL = Executors.newFixedThreadPool(10);
@@ -71,7 +73,8 @@ public class YahooChartClient {
     // -----------------------------------------------------------------------
 
     private Meta fetchOne(String symbol) {
-        String url = BASE_URL + symbol + PARAMS;
+        String encodedSymbol = UriUtils.encodePathSegment(symbol, StandardCharsets.UTF_8);
+        String url = BASE_URL + encodedSymbol + "?interval=1d&range=1d";
         try {
             ResponseEntity<YahooChartResponse> response = restTemplate.exchange(
                     url, HttpMethod.GET,
