@@ -1,6 +1,6 @@
 package com.example.portfolio.controller;
 
-import com.example.portfolio.Service.PortfolioRealtimeService;
+import com.example.portfolio.service.PortfolioRealtimeService;
 import com.example.portfolio.dto.PortfolioRealtimeResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.slf4j.Logger;

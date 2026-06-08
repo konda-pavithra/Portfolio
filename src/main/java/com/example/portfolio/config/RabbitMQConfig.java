@@ -150,7 +150,7 @@ public class RabbitMQConfig {
 
     /**
      * Custom listener container factory that wires in both the JSON message
-     * converter and the retry interceptor.  {@link com.practice.demo.consumer.StockAlertConsumer}
+     * converter and the retry interceptor.  {@link com.example.portfolio.consumer.StockAlertConsumer}
      * references this factory by name via {@code containerFactory = "rabbitListenerContainerFactory"}.
      */
     @Bean

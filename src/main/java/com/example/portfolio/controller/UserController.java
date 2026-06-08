@@ -1,7 +1,7 @@
 package com.example.portfolio.controller;
 
 
-import com.example.portfolio.Service.UserService;
+import com.example.portfolio.service.UserService;
 import com.example.portfolio.dto.LoginRequest;
 import com.example.portfolio.dto.LoginResponse;
 import com.example.portfolio.dto.RegistrationRequest;
@@ -9,7 +9,6 @@ import com.example.portfolio.dto.RegistrationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

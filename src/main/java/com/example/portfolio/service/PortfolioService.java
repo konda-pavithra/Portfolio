@@ -1,4 +1,4 @@
-package com.example.portfolio.Service;
+package com.example.portfolio.service;
 
 import com.example.portfolio.constants.NseStocks;
 import com.example.portfolio.dto.*;

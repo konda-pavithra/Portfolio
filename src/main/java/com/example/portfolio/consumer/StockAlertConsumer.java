@@ -1,6 +1,6 @@
 package com.example.portfolio.consumer;
 
-import com.example.portfolio.Service.EmailService;
+import com.example.portfolio.service.EmailService;
 import com.example.portfolio.config.RabbitMQConfig;
 import com.example.portfolio.dto.StockAlertMessage;
 import org.slf4j.Logger;

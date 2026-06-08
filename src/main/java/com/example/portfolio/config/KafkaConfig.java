@@ -37,7 +37,7 @@ import java.util.Map;
  * <h3>Consumer (batch listener)</h3>
  * {@link StockPriceKafkaConsumer} uses {@code batchKafkaListenerContainerFactory}.
  * One Kafka poll delivers an entire batch of messages (all stocks from one refresh
- * cycle), so the consumer fires exactly ONE {@link com.practice.demo.event.StockPricesUpdatedEvent}
+ * cycle), so the consumer fires exactly ONE {@link com.example.portfolio.event.StockPricesUpdatedEvent}
  * per refresh — preventing redundant SSE pushes.
  */
 @Configuration
@@ -108,7 +108,7 @@ public class KafkaConfig {
         // Fixed target type — independent of any producer-set type headers
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, StockPriceMessage.class.getName());
         props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
-        props.put(JsonDeserializer.TRUSTED_PACKAGES, "com.practice.demo.dto");
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "com.example.portfolio.dto");
         return new DefaultKafkaConsumerFactory<>(props);
     }
 

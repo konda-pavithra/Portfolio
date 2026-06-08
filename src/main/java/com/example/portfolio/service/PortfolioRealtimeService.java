@@ -1,4 +1,4 @@
-package com.example.portfolio.Service;
+package com.example.portfolio.service;
 
 import com.example.portfolio.dto.*;
 import com.example.portfolio.entity.Portfolio;

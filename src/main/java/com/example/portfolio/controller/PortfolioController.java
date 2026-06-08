@@ -1,6 +1,6 @@
 package com.example.portfolio.controller;
 
-import com.example.portfolio.Service.PortfolioService;
+import com.example.portfolio.service.PortfolioService;
 import com.example.portfolio.dto.*;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

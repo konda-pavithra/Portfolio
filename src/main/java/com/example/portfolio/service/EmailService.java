@@ -1,4 +1,4 @@
-package com.example.portfolio.Service;
+package com.example.portfolio.service;
 
 import com.example.portfolio.dto.StockAlertMessage;
 import jakarta.mail.MessagingException;
@@ -153,7 +153,7 @@ public class EmailService {
                   <title>Stock Price Alert</title>
                 </head>
                 <body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background:#f4f4f4;">
-                  <table width="100%" cellpadding="0" cellspacing="0"
+                  <table width="100%%" cellpadding="0" cellspacing="0"
                          style="background:#f4f4f4;padding:20px 0;">
                     <tr><td align="center">
                       <table width="600" cellpadding="0" cellspacing="0"
@@ -180,7 +180,7 @@ public class EmailService {
                         <!-- Threshold details -->
                         <tr>
                           <td style="padding:16px 32px;">
-                            <table width="100%" cellpadding="0" cellspacing="0"
+                            <table width="100%%" cellpadding="0" cellspacing="0"
                                    style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;">
                               %s
                               %s
@@ -193,7 +193,7 @@ public class EmailService {
                         <!-- Portfolio impact -->
                         <tr>
                           <td style="padding:0 32px 16px;">
-                            <table width="100%" cellpadding="0" cellspacing="0"
+                            <table width="100%%" cellpadding="0" cellspacing="0"
                                    style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;">
                               %s
                               %s
@@ -202,7 +202,7 @@ public class EmailService {
                               <!-- P&L row -->
                               <tr>
                                 <td style="padding:6px 20px 14px;">
-                                  <table width="100%" cellpadding="0" cellspacing="0">
+                                  <table width="100%%" cellpadding="0" cellspacing="0">
                                     <tr>
                                       <td style="color:#424242;font-size:14px;">Profit / Loss</td>
                                       <td align="right"
@@ -286,7 +286,7 @@ public class EmailService {
         return """
                <tr>
                  <td style="padding:6px 20px;">
-                   <table width="100%" cellpadding="0" cellspacing="0">
+                   <table width="100%%" cellpadding="0" cellspacing="0">
                      <tr>
                        <td style="color:#424242;font-size:14px;">%s</td>
                        <td align="right"
