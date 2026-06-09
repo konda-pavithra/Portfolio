@@ -11,37 +11,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.interceptor.RetryOperationsInterceptor;
 
-/**
- * RabbitMQ topology and serialization configuration.
- *
- * <h3>Topology</h3>
- * <pre>
- *  [AlertGeneratorScheduler]
- *        │ convertAndSend(EXCHANGE, ROUTING_KEY, message)
- *        ▼
- *  stock.alerts.exchange  (Direct)
- *        │ routing key: stock.alert
- *        ▼
- *  stock.alerts.queue  ──────────────────────────────► [StockAlertConsumer]
- *        │                                                     │ sends email
- *        │  on max-retries exhausted (3 attempts, exponential) │
- *        ▼                                                     │ (re-throws on failure)
- *  stock.alerts.dlx  (Dead-letter exchange)                    │
- *        │                                                     ▼
- *        ▼                                           stock.alerts.dlq
- *  stock.alerts.dlq  ◄─── inspect / replay manually
- * </pre>
- *
- * <h3>Message format</h3>
- * Messages are serialized as JSON via {@link JacksonJsonMessageConverter}.
- * The {@code __TypeId__} header carries the fully-qualified class name so
- * the consumer can deserialize without extra configuration.
- *
- * <h3>Retry policy</h3>
- * The listener container retries failed message processing up to 3 times
- * (with exponential back-off: 1 s → 2 s → 4 s). After 3 failures the
- * message is rejected and routed to the DLQ for manual inspection.
- */
 @Configuration
 public class RabbitMQConfig {
 
@@ -54,9 +23,6 @@ public class RabbitMQConfig {
     public static final String DLX = "stock.alerts.dlx";
     public static final String DLQ = "stock.alerts.dlq";
 
-    // =========================================================================
-    // Dead-letter infrastructure
-    // =========================================================================
 
     @Bean
     public DirectExchange deadLetterExchange() {
@@ -74,10 +40,6 @@ public class RabbitMQConfig {
                 .to(deadLetterExchange)
                 .with(ALERT_ROUTING_KEY);
     }
-
-    // =========================================================================
-    // Main alert infrastructure
-    // =========================================================================
 
     @Bean
     public DirectExchange alertExchange() {
@@ -99,23 +61,11 @@ public class RabbitMQConfig {
                 .with(ALERT_ROUTING_KEY);
     }
 
-    // =========================================================================
-    // JSON message converter
-    // =========================================================================
-
-    /**
-     * Uses Jackson to serialize/deserialize AMQP messages as JSON.
-     * Spring Boot auto-wires this bean into the auto-configured {@link RabbitTemplate}.
-     */
     @Bean
     public JacksonJsonMessageConverter jsonMessageConverter() {
         return new JacksonJsonMessageConverter();
     }
 
-    /**
-     * Overrides the auto-configured {@link RabbitTemplate} to use the JSON converter
-     * so that {@code rabbitTemplate.convertAndSend(..., message)} serializes to JSON.
-     */
     @Bean
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory,
                                          JacksonJsonMessageConverter jsonMessageConverter) {
@@ -124,15 +74,7 @@ public class RabbitMQConfig {
         return template;
     }
 
-    // =========================================================================
-    // Listener container factory  (retry + JSON deserialization)
-    // =========================================================================
 
-    /**
-     * Retry interceptor: 3 attempts with 1 s → 2 s → 4 s exponential back-off.
-     * After all attempts are exhausted the message is rejected (not re-queued),
-     * which causes RabbitMQ to route it to the DLQ via the dead-letter exchange.
-     */
    @Bean
     public RetryOperationsInterceptor retryInterceptor() {
         RejectAndDontRequeueRecoverer amqpRecoverer = new RejectAndDontRequeueRecoverer();
@@ -148,11 +90,6 @@ public class RabbitMQConfig {
                 .build();
     }
 
-    /**
-     * Custom listener container factory that wires in both the JSON message
-     * converter and the retry interceptor.  {@link com.example.portfolio.consumer.StockAlertConsumer}
-     * references this factory by name via {@code containerFactory = "rabbitListenerContainerFactory"}.
-     */
     @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
             ConnectionFactory connectionFactory,

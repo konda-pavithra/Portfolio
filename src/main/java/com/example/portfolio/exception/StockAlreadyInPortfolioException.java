@@ -3,10 +3,6 @@ package com.example.portfolio.exception;
 
 import com.example.portfolio.dto.PortfolioResponse;
 
-/**
- * Thrown when a user tries to add a stock that already exists in their portfolio.
- * Carries the existing holding so the UI can pre-fill the update form.
- */
 public class StockAlreadyInPortfolioException extends RuntimeException {
 
     private final PortfolioResponse existingHolding;

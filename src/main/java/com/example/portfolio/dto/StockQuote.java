@@ -13,10 +13,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class StockQuote {
 
-    /** Full Yahoo Finance symbol, e.g. "RELIANCE.NS" */
     private String symbol;
 
-    /** Exchange-only ticker, e.g. "RELIANCE" */
     private String displaySymbol;
 
     private String companyName;
@@ -32,13 +30,8 @@ public class StockQuote {
 
     private String currency;
 
-    /**
-     * Market state reported by Yahoo Finance.
-     * Typical values: "REGULAR", "PRE", "POST", "CLOSED"
-     */
     private String marketState;
 
-    /** true when the day's change is positive (green ticker). */
     private boolean gainDay;
 
     private LocalDateTime lastUpdated;

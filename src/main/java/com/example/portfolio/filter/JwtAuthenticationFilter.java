@@ -17,22 +17,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 
-/**
- * Intercepts every request exactly once.
- * If a valid JWT is found the filter authenticates the request inside the
- * SecurityContext so that downstream handlers see an authenticated principal —
- * without touching the database.
- *
- * <h3>Token sources (checked in order)</h3>
- * <ol>
- *   <li><b>Authorization header</b> — {@code Authorization: Bearer <token>}
- *       Standard path used by all REST clients and mobile apps.</li>
- *   <li><b>{@code token} query parameter</b> — {@code ?token=<jwt>}
- *       Fallback for browser {@code EventSource} (SSE) connections, which
- *       cannot set custom headers.  Used exclusively by
- *       {@code GET /api/portfolio/stream}.</li>
- * </ol>
- */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -75,15 +59,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    // -----------------------------------------------------------------------
-    // Helpers
-    // -----------------------------------------------------------------------
-
-    /**
-     * Extracts the raw JWT from the request.
-     * Checks the {@code Authorization: Bearer} header first; if absent, falls
-     * back to the {@code token} query parameter (needed for browser SSE clients).
-     */
     private String extractToken(HttpServletRequest request) {
         // 1. Standard Authorization header
         String header = request.getHeader("Authorization");

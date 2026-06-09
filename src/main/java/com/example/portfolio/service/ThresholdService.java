@@ -52,7 +52,6 @@ public class ThresholdService {
         StockThreshold threshold;
 
         if (existing.isEmpty()) {
-            // ── Create ──────────────────────────────────────────────────────
             threshold = StockThreshold.builder()
                     .user(user)
                     .symbol(symbol)
@@ -67,7 +66,6 @@ public class ThresholdService {
                     request.getUpperThresholdPercent(), request.getLowerThresholdPercent(), refPx);
 
         } else {
-            // ── Update ──────────────────────────────────────────────────────
             threshold = existing.get();
 
             logger.info("User '{}' — updating threshold for '{}': "
@@ -159,10 +157,7 @@ public class ThresholdService {
         return BigDecimal.valueOf(quote.getPrice()).setScale(2, RoundingMode.HALF_UP);
     }
 
-    /**
-     * Builds the API response, computing the absolute alert price levels on the fly.
-     * Alert prices are {@code null} when {@code referencePrice} is {@code null}.
-     */
+
     private ThresholdResponse toResponse(StockThreshold t) {
         BigDecimal ref   = t.getReferencePrice();
         BigDecimal upper = t.getUpperThresholdPercent();
@@ -183,10 +178,7 @@ public class ThresholdService {
                 .build();
     }
 
-    /**
-     * {@code referencePrice × (1 + upperPct / 100)}, rounded to 2 decimals.
-     * Returns {@code null} if {@code referencePrice} is {@code null}.
-     */
+
     private BigDecimal computeUpperAlert(BigDecimal referencePrice, BigDecimal upperPct) {
         if (referencePrice == null) return null;
         // factor = 1 + upper / 100
@@ -195,10 +187,7 @@ public class ThresholdService {
         return referencePrice.multiply(factor).setScale(2, RoundingMode.HALF_UP);
     }
 
-    /**
-     * {@code referencePrice × (1 − lowerPct / 100)}, rounded to 2 decimals.
-     * Returns {@code null} if {@code referencePrice} is {@code null}.
-     */
+
     private BigDecimal computeLowerAlert(BigDecimal referencePrice, BigDecimal lowerPct) {
         if (referencePrice == null) return null;
         // factor = 1 - lower / 100
@@ -207,14 +196,7 @@ public class ThresholdService {
         return referencePrice.multiply(factor).setScale(2, RoundingMode.HALF_UP);
     }
 
-    // ── Symbol normalization (mirrors PortfolioService) ─────────────────────
 
-    /**
-     * Normalises a user-supplied stock identifier to a canonical ".NS" symbol.
-     * Accepts: bare ticker ("RELIANCE"), qualified ("RELIANCE.NS"), or company
-     * display name ("Reliance Industries Limited"). Returns {@code null} if not
-     * a recognised Nifty 50 stock.
-     */
     private String normalizeSymbol(String input) {
         if (input == null || input.isBlank()) return null;
         String trimmed = input.trim();

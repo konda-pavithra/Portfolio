@@ -88,9 +88,6 @@ public class StockPriceKafkaProducer {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Mapping
-    // -------------------------------------------------------------------------
 
     private StockPriceMessage toMessage(StockQuote q) {
         return StockPriceMessage.builder()

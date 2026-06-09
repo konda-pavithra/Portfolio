@@ -74,9 +74,6 @@ public class StockService {
         }
     }
 
-    // -----------------------------------------------------------------------
-    // REST query (called by StockController on each poll)
-    // -----------------------------------------------------------------------
 
     public StockTickerResponse getCurrentTickerResponse() {
         if (cachedQuotes.isEmpty()) {
@@ -92,9 +89,6 @@ public class StockService {
         return buildResponse(dataStatus);
     }
 
-    // -----------------------------------------------------------------------
-    // Internals
-    // -----------------------------------------------------------------------
 
     private StockTickerResponse buildResponse(String status) {
         return StockTickerResponse.builder()
@@ -109,7 +103,7 @@ public class StockService {
                 .build();
     }
 
-    // ── Mapping: Yahoo Chart Meta → StockQuote ───────────────────────────────
+    //  Mapping: Yahoo Chart Meta → StockQuote
 
     private StockQuote mapToStockQuote(Meta m) {
         String symbol        = m.getSymbol() != null ? m.getSymbol() : "UNKNOWN";
@@ -143,12 +137,6 @@ public class StockService {
         return symbol.replace(".NS", "");
     }
 
-    // ── Market-hours check (IST) ─────────────────────────────────────────────
-
-    /**
-     * NSE trades Monday–Friday, 09:15–15:30 IST.
-     * Public holidays are not accounted for here.
-     */
     private boolean isMarketOpen() {
         ZonedDateTime now  = ZonedDateTime.now(IST);
         DayOfWeek     day  = now.getDayOfWeek();

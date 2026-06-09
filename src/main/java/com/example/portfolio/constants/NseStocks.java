@@ -3,10 +3,6 @@ package com.example.portfolio.constants;
 import java.util.List;
 import java.util.Map;
 
-/**
- * NSE Nifty 50 stock symbols in Yahoo Finance format (.NS suffix).
- * Update this list whenever NSE revises the Nifty 50 index composition.
- */
 public final class NseStocks {
 
     private NseStocks() {}

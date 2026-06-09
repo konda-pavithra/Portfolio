@@ -17,29 +17,6 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Kafka infrastructure configuration.
- *
- * <h3>Topic</h3>
- * <pre>
- *   stock.prices — one message per Nifty 50 quote, published after each
- *                  Yahoo Finance refresh cycle (every 30 s).
- *                  Key = stock symbol (e.g. "RELIANCE.NS")
- *                  Value = {@link StockPriceMessage} JSON
- * </pre>
- *
- * <h3>Producer</h3>
- * {@link StockPriceKafkaProducer} uses the {@link KafkaTemplate} bean.
- * Messages are serialized to JSON via {@link JsonSerializer}.
- * Type-info headers are suppressed ({@code ADD_TYPE_INFO_HEADERS = false})
- * since the consumer is configured with a fixed target type.
- *
- * <h3>Consumer (batch listener)</h3>
- * {@link StockPriceKafkaConsumer} uses {@code batchKafkaListenerContainerFactory}.
- * One Kafka poll delivers an entire batch of messages (all stocks from one refresh
- * cycle), so the consumer fires exactly ONE {@link com.example.portfolio.event.StockPricesUpdatedEvent}
- * per refresh — preventing redundant SSE pushes.
- */
 @Configuration
 public class KafkaConfig {
 
@@ -58,10 +35,6 @@ public class KafkaConfig {
     @Value("${kafka.topic.replication-factor:1}")
     private short replicationFactor;
 
-    // =========================================================================
-    // Topic auto-creation (Kafka broker creates the topic on first use)
-    // =========================================================================
-
     @Bean
     public org.apache.kafka.clients.admin.NewTopic stockPricesTopic() {
         return TopicBuilder.name(stockPricesTopic)
@@ -70,10 +43,7 @@ public class KafkaConfig {
                 .build();
     }
 
-    // =========================================================================
     // Producer
-    // =========================================================================
-
     @Bean
     public ProducerFactory<String, StockPriceMessage> stockPriceProducerFactory() {
         Map<String, Object> props = new HashMap<>();
@@ -93,10 +63,7 @@ public class KafkaConfig {
         return new KafkaTemplate<>(stockPriceProducerFactory);
     }
 
-    // =========================================================================
     // Consumer
-    // =========================================================================
-
     @Bean
     public ConsumerFactory<String, StockPriceMessage> stockPriceConsumerFactory() {
         Map<String, Object> props = new HashMap<>();
@@ -112,15 +79,6 @@ public class KafkaConfig {
         return new DefaultKafkaConsumerFactory<>(props);
     }
 
-    /**
-     * Batch-mode listener factory.
-     *
-     * <p>The consumer's {@code @KafkaListener} receives a {@code List<StockPriceMessage>}
-     * containing all messages available in one Kafka poll.  Because the producer
-     * publishes all 50 Nifty 50 quotes in rapid succession after each refresh, a
-     * single poll typically delivers them all at once — enabling one atomic
-     * LivePriceStore update and one SSE push per 30-second cycle.
-     */
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, StockPriceMessage>
             batchKafkaListenerContainerFactory(

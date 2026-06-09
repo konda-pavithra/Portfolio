@@ -15,21 +15,6 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Parses a portfolio Excel file (.xls or .xlsx) using Apache POI.
- *
- * Expected sheet layout (first sheet, row 0 = header):
- * ┌───────────────┬──────────┬───────────────┐
- * │  Stock Name   │ Quantity │ Buying Price  │
- * ├───────────────┼──────────┼───────────────┤
- * │  RELIANCE     │    10    │   2800.00     │
- * │  TCS          │     5    │   3500.50     │
- * └───────────────┴──────────┴───────────────┘
- *
- * Column indices: 0 = Stock Name, 1 = Quantity, 2 = Buying Price.
- * The "Stock Name" value is returned as-is; symbol normalisation and
- * Nifty 50 validation are performed by {@link com.practice.demo.service.PortfolioService}.
- */
 @Component
 public class ExcelParser {
 
@@ -40,18 +25,7 @@ public class ExcelParser {
     private static final int    COL_BUYING_PRICE  = 2;
     private static final long   MAX_FILE_BYTES    = 5L * 1024 * 1024; // 5 MB
 
-    // -----------------------------------------------------------------------
-    // Public API
-    // -----------------------------------------------------------------------
 
-    /**
-     * Parses the uploaded file and returns one {@link PortfolioEntry} per
-     * valid data row.  Rows with unreadable data are skipped; the reason
-     * is added to the {@code parseErrors} list inside the returned wrapper.
-     *
-     * @param file the uploaded .xls / .xlsx file
-     * @return wrapper containing parsed entries and any per-row errors
-     */
     public ParseResult parse(MultipartFile file) {
         validateFile(file);
 
@@ -88,9 +62,6 @@ public class ExcelParser {
         return new ParseResult(entries, parseErrors);
     }
 
-    // -----------------------------------------------------------------------
-    // Internals
-    // -----------------------------------------------------------------------
 
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
@@ -132,7 +103,7 @@ public class ExcelParser {
                 .build();
     }
 
-    /** Reads a cell as a trimmed String regardless of its storage type. */
+
     private String readString(Cell cell) {
         if (cell == null) return null;
         return switch (cell.getCellType()) {
@@ -177,9 +148,6 @@ public class ExcelParser {
         return true;
     }
 
-    // -----------------------------------------------------------------------
-    // Result wrapper
-    // -----------------------------------------------------------------------
 
     /** Carries both the successfully parsed entries and any per-row errors. */
     public record ParseResult(List<PortfolioEntry> entries, List<String> parseErrors) {}

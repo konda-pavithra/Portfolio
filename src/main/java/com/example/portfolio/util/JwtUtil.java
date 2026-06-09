@@ -23,15 +23,8 @@ public class JwtUtil {
     @Value("${jwt.expiration-ms}")
     private long expirationMs;
 
-    // -----------------------------------------------------------------------
-    // Token generation
-    // -----------------------------------------------------------------------
 
-    /**
-     * Generates a signed JWT for the given username.
-     * Algorithm: HMAC-SHA256 (HS256).
-     * Claims: subject=username, issuedAt=now, expiration=now+expirationMs.
-     */
+    // Token generation
     public String generateToken(String username) {
         Date now    = new Date();
         Date expiry = new Date(now.getTime() + expirationMs);
@@ -46,10 +39,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    // -----------------------------------------------------------------------
     // Token introspection
-    // -----------------------------------------------------------------------
-
     public String extractUsername(String token) {
         return parseClaims(token).getSubject();
     }
@@ -62,14 +52,7 @@ public class JwtUtil {
         return expirationMs;
     }
 
-    // -----------------------------------------------------------------------
     // Token validation
-    // -----------------------------------------------------------------------
-
-    /**
-     * Returns true only when the token is structurally valid, correctly signed,
-     * and not yet expired.
-     */
     public boolean validateToken(String token) {
         try {
             parseClaims(token);
@@ -89,9 +72,6 @@ public class JwtUtil {
         return false;
     }
 
-    // -----------------------------------------------------------------------
-    // Internal helpers
-    // -----------------------------------------------------------------------
 
     private Claims parseClaims(String token) {
         return Jwts.parser()

@@ -10,13 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(
-    name = "portfolio",
-    uniqueConstraints = @UniqueConstraint(
-        name = "uq_portfolio_user_symbol",
-        columnNames = {"user_id", "symbol"}
-    )
-)
+@Table(name = "portfolio")
 @Data
 @Builder
 @NoArgsConstructor
@@ -31,19 +25,16 @@ public class Portfolio {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    /** Yahoo Finance symbol, e.g. "RELIANCE.NS" */
     @Column(nullable = false, length = 20)
     private String symbol;
 
-    /** Human-readable company name, e.g. "Reliance Industries" */
     @Column(name = "company_name", nullable = false)
     private String companyName;
 
-    /** Number of shares held. */
     @Column(nullable = false)
     private Integer quantity;
 
-    /** Average buying price per share in INR. */
+
     @Column(name = "buying_price", nullable = false, precision = 12, scale = 2)
     private BigDecimal buyingPrice;
 

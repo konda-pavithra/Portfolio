@@ -21,20 +21,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/**
- * Fetches live stock quotes from Yahoo Finance chart API.
- *
- * URL pattern (no auth / no crumb required):
- *   https://query2.finance.yahoo.com/v8/finance/chart/{symbol}?interval=1d&range=1d
- *
- * All current price fields are in chart.result[0].meta:
- *   regularMarketPrice, regularMarketChange, regularMarketChangePercent,
- *   regularMarketOpen, regularMarketDayHigh, regularMarketDayLow,
- *   regularMarketPreviousClose, regularMarketVolume, marketState, currency.
- *
- * Since the endpoint is per-symbol, all 50 Nifty symbols are fetched in parallel
- * using a fixed thread pool to keep total latency under ~3 seconds.
- */
 @Slf4j
 @Component
 public class YahooChartClient {
@@ -50,10 +36,7 @@ public class YahooChartClient {
         this.restTemplate = restTemplate;
     }
 
-    /**
-     * Fetches quotes for all symbols in parallel.
-     * Returns only successfully fetched quotes (failed symbols are skipped).
-     */
+
     public List<Meta> fetchQuotes(List<String> symbols) {
         if (symbols == null || symbols.isEmpty()) return Collections.emptyList();
 
@@ -70,7 +53,6 @@ public class YahooChartClient {
         return results;
     }
 
-    // -----------------------------------------------------------------------
 
     private Meta fetchOne(String symbol) {
         String encodedSymbol = UriUtils.encodePathSegment(symbol, StandardCharsets.UTF_8);

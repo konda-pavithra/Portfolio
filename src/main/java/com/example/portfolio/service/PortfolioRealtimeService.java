@@ -154,7 +154,7 @@ public class PortfolioRealtimeService {
     @Transactional(readOnly = true)
     public PortfolioRealtimeResponse computeValuation(String username) {
 
-        // ── 1. Load user ─────────────────────────────────────────────────────
+        // Load user
         Optional<User> userOpt = userRepository.findByUsername(username);
         if (userOpt.isEmpty()) {
             logger.error("computeValuation — user '{}' not found", username);
@@ -162,7 +162,7 @@ public class PortfolioRealtimeService {
         }
         User user = userOpt.get();
 
-        // ── 2. Load portfolio holdings and thresholds ────────────────────────
+        //  Load portfolio holdings and thresholds
         List<Portfolio>       holdings   = portfolioRepository.findByUserOrderBySymbolAsc(user);
         List<StockThreshold>  thresholds = thresholdRepository.findByUserOrderBySymbolAsc(user);
 
@@ -171,7 +171,7 @@ public class PortfolioRealtimeService {
             return emptyResponse();
         }
 
-        // ── 3. Build price map and threshold map using Streams ───────────────
+        // Build price map and threshold map using Streams
         // Price map: choose LivePriceStore (Kafka) as primary, fall back to StockService cache
         Map<String, StockPriceMessage> liveMap   = livePriceStore.getAll();
         Map<String, StockQuote>        cachedMap  = stockService.getCurrentQuotesMap();
@@ -184,7 +184,7 @@ public class PortfolioRealtimeService {
         Map<String, StockThreshold> thresholdBySymbol = thresholds.stream()
                 .collect(Collectors.toMap(StockThreshold::getSymbol, t -> t));
 
-        // ── 4. Per-holding valuation — Streams .map() + .sorted() ────────────
+        // Per-holding valuation — Streams .map() + .sorted()
         List<HoldingRealtimeValuation> holdingValuations = holdings.stream()
                 .map(holding -> {
                     BigDecimal currentPrice = resolveCurrentPrice(
@@ -197,7 +197,7 @@ public class PortfolioRealtimeService {
                         String.CASE_INSENSITIVE_ORDER))
                 .collect(Collectors.toList());
 
-        // ── 5. Portfolio-level aggregates — Streams .reduce() ────────────────
+        //  Portfolio-level aggregates — Streams .reduce()
         BigDecimal totalInvestment = holdingValuations.stream()
                 .map(HoldingRealtimeValuation::getInvestmentValue)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -217,7 +217,7 @@ public class PortfolioRealtimeService {
                     .doubleValue()
                 : 0.0;
 
-        // ── 6. Threshold breach summary — Streams .filter().count() ──────────
+        //  Threshold breach summary — Streams .filter().count()
         long aboveUpper   = holdingValuations.stream()
                 .filter(h -> h.getThresholdStatus() == ThresholdStatus.ABOVE_UPPER)
                 .count();

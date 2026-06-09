@@ -7,10 +7,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-/**
- * Returned by {@code POST /api/portfolio/confirm}.
- * Summarises the changes that were persisted.
- */
 @Data
 @Builder
 @NoArgsConstructor

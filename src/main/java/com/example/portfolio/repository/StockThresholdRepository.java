@@ -14,10 +14,9 @@ import java.util.Optional;
  */
 public interface StockThresholdRepository extends JpaRepository<StockThreshold, Long> {
 
-    /** All thresholds for a user, sorted A→Z by symbol for consistent UI ordering. */
+
     List<StockThreshold> findByUserOrderBySymbolAsc(User user);
 
-    /** Look up the threshold for a specific stock belonging to a user. */
     Optional<StockThreshold> findByUserAndSymbol(User user, String symbol);
 
     /** Fast existence check used before insert to decide create vs. update. */

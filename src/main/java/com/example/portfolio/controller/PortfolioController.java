@@ -39,8 +39,6 @@ public class PortfolioController {
     }
 
 
-
-
     @PostMapping("/add")
     public ResponseEntity<PortfolioResponse> addStock(
             @RequestBody AddStockRequest request,
@@ -112,10 +110,9 @@ public class PortfolioController {
         return ResponseEntity.ok(valuation);
     }
 
-
+    //Symbol, Quantity, Buying Price
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PortfolioUploadPreview> uploadPortfolio(
-            @Parameter(description = "Excel file (.xls or .xlsx) with columns: Symbol, Quantity, Buying Price")
             @RequestParam("file") MultipartFile file,
             Authentication authentication) {
 

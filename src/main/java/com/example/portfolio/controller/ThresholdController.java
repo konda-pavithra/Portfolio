@@ -29,7 +29,6 @@ public class ThresholdController {
 
     @PutMapping("/{symbol}")
     public ResponseEntity<ThresholdResponse> setThreshold(
-            @Parameter(description = "Stock ticker or company name", example = "RELIANCE")
             @PathVariable String symbol,
             @RequestBody ThresholdRequest request,
             Authentication authentication) {
@@ -65,7 +64,6 @@ public class ThresholdController {
 
     @GetMapping("/{symbol}")
     public ResponseEntity<ThresholdResponse> getThreshold(
-            @Parameter(description = "Stock ticker or company name", example = "INFY")
             @PathVariable String symbol,
             Authentication authentication) {
 
@@ -86,7 +84,6 @@ public class ThresholdController {
 
     @DeleteMapping("/{symbol}")
     public ResponseEntity<Void> deleteThreshold(
-            @Parameter(description = "Stock ticker or company name", example = "TCS")
             @PathVariable String symbol,
             Authentication authentication) {
 

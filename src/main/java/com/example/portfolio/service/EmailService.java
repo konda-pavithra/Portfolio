@@ -15,17 +15,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 
-/**
- * Composes and sends HTML alert emails using Spring's {@link JavaMailSender}.
- *
- * <p>Called exclusively by {@link com.practice.demo.consumer.StockAlertConsumer}
- * after a {@link StockAlertMessage} is received from RabbitMQ.
- *
- * <h3>Design</h3>
- * All dynamic values are pre-formatted into plain strings before being inserted
- * into the HTML template via a simple {@link String#formatted} call.  This avoids
- * ambiguity around {@code %} characters inside BigDecimal / percentage values.
- */
 @Service
 public class EmailService {
 

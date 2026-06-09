@@ -6,18 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-/**
- * Drives periodic refresh of the Nifty 50 stock price cache.
- *
- * fixedDelay  — next run starts N ms after the previous run completes,
- *               so a slow Yahoo Finance call never causes overlapping fetches.
- * initialDelay — small pause at startup so the application context is fully
- *               ready before the first network call is made.
- *
- * Both values are configurable via application.properties:
- *   stock.refresh.interval-ms     (default 30 000 ms = 30 s)
- *   stock.refresh.initial-delay-ms (default  5 000 ms =  5 s)
- */
 @Component
 public class StockPriceScheduler {
 

@@ -41,7 +41,9 @@ public class PortfolioService {
     }
 
     public List<NseStockInfo> getNiftyStockList() {
-        logger.debug("Returning Nifty 50 stock list ({} stocks)", NseStocks.SYMBOLS.size());
+        if(logger.isDebugEnabled()) {
+            logger.debug("Returning Nifty 50 stock list ({} stocks)", NseStocks.SYMBOLS.size());
+        }
         return NseStocks.SYMBOLS.stream()
                 .map(symbol -> NseStockInfo.builder()
                         .symbol(symbol)
@@ -87,11 +89,7 @@ public class PortfolioService {
         return toPortfolioResponse(saved);
     }
 
-    /**
-     * Updates quantity and/or buying price of an existing stock holding.
-     *
-     * @param rawSymbol path variable from the URL (e.g. "RELIANCE" or "RELIANCE.NS")
-     */
+
     @Transactional
     public PortfolioResponse updateHolding(String rawSymbol, AddStockRequest request, String username) {
         String symbol = resolveAndValidateSymbol(rawSymbol);
@@ -122,11 +120,7 @@ public class PortfolioService {
         return toPortfolioResponse(updated);
     }
 
-    /**
-     * Removes a stock holding from the user's portfolio.
-     *
-     * @param rawSymbol path variable from the URL
-     */
+
     @Transactional
     public void removeHolding(String rawSymbol, String username) {
         String symbol = resolveAndValidateSymbol(rawSymbol);

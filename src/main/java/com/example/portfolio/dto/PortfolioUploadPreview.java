@@ -19,36 +19,15 @@ import java.util.List;
 @AllArgsConstructor
 public class PortfolioUploadPreview {
 
-    /** Stocks in the file that are NOT yet in the user's portfolio — will be added. */
     private List<PortfolioEntry> newStocks;
 
-    /**
-     * Stocks in the file that already exist in the user's portfolio — will be
-     * updated (quantity and/or buying price will change).
-     */
     private List<PortfolioUpdateItem> stocksToUpdate;
 
-    /**
-     * Raw names from the Excel sheet that could not be matched to any
-     * Nifty 50 symbol. These rows will be ignored even after confirmation.
-     */
     private List<String> invalidSymbols;
 
-    /** Rows skipped due to data errors (non-numeric quantity/price, empty cells, etc.). */
     private List<String> parseErrors;
 
-    /**
-     * Human-readable summary message for the UI to display above the
-     * confirmation dialog, e.g.:
-     * "2 new stocks will be added. 1 existing stock will be updated.
-     *  Please review the changes below and confirm."
-     */
     private String userMessage;
 
-    /**
-     * true  → the file contains stocks that already exist in the user's
-     *          portfolio; user must explicitly confirm the update.
-     * false → only new stocks; can be applied without an update prompt.
-     */
     private boolean requiresConfirmation;
 }

@@ -8,28 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
-/**
- * Alert Consumer (consumer side of the RabbitMQ pipeline).
- *
- * <h3>Responsibility</h3>
- * Listens to {@code stock.alerts.queue}, deserializes each {@link StockAlertMessage}
- * from JSON, and delegates to {@link EmailService} to send the HTML alert email.
- *
- * <h3>Error handling</h3>
- * If {@link EmailService#sendThresholdAlert} throws (e.g. SMTP failure), the
- * exception propagates and the RabbitMQ listener container applies the retry
- * policy configured in {@link RabbitMQConfig}:
- * <ol>
- *   <li>Attempt 1 — immediate</li>
- *   <li>Attempt 2 — after 1 s</li>
- *   <li>Attempt 3 — after 2 s</li>
- *   <li>All attempts exhausted → message rejected, routed to {@code stock.alerts.dlq}</li>
- * </ol>
- *
- * <h3>Idempotency note</h3>
- * The alert generator suppresses duplicate alerts via a cooldown window, so
- * re-delivery of a message from the DLQ is safe to process.
- */
 @Component
 public class StockAlertConsumer {
 
@@ -41,16 +19,7 @@ public class StockAlertConsumer {
         this.emailService = emailService;
     }
 
-    /**
-     * Receives a deserialized {@link StockAlertMessage} from RabbitMQ and sends
-     * the corresponding HTML alert email to the user.
-     *
-     * <p>Jackson2JsonMessageConverter (configured in {@link RabbitMQConfig}) handles
-     * JSON deserialization automatically based on the {@code __TypeId__} AMQP header.
-     *
-     * @param message the alert payload published by {@link com.practice.demo.scheduler.AlertGeneratorScheduler}
-     * @throws Exception re-thrown on email failure so the retry + DLQ policy applies
-     */
+
     @RabbitListener(
         queues             = RabbitMQConfig.ALERT_QUEUE,
         containerFactory   = "rabbitListenerContainerFactory"

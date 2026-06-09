@@ -8,9 +8,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * Read-model for a single portfolio holding returned by {@code GET /api/portfolio}.
- */
+
 @Data
 @Builder
 @NoArgsConstructor
