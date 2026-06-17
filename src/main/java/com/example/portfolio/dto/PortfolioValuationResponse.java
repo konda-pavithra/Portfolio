@@ -18,7 +18,7 @@ public class PortfolioValuationResponse {
     private List<HoldingValuation> holdings;
     private int                    totalHoldings;
 
-    // ── Portfolio-level aggregates
+
     private BigDecimal totalInvestment;
     private BigDecimal totalCurrentValue;
     private BigDecimal totalProfitLoss;

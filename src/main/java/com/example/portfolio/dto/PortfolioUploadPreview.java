@@ -7,12 +7,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-/**
- * Returned by {@code POST /api/portfolio/upload}.
- *
- * The UI must display this to the user and ask for confirmation before
- * calling {@code POST /api/portfolio/confirm}.
- */
 @Data
 @Builder
 @NoArgsConstructor

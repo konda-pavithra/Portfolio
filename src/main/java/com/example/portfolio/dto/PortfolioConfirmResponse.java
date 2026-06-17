@@ -18,6 +18,5 @@ public class PortfolioConfirmResponse {
     private int skippedCount;   // entries that failed re-validation or were duplicates
     private String message;
 
-    /** The user's full updated portfolio, ready to render in the UI. */
     private List<PortfolioResponse> portfolio;
 }

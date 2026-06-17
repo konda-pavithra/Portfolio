@@ -35,16 +35,7 @@ public class EmailService {
         this.mailSender = mailSender;
     }
 
-    // =========================================================================
-    // Public API
-    // =========================================================================
 
-    /**
-     * Sends an HTML price-alert email to the user identified in {@code message}.
-     *
-     * @throws MessagingException if the SMTP transport fails (the caller — the
-     *         RabbitMQ consumer — re-throws so the retry/DLQ policy applies)
-     */
     public void sendThresholdAlert(StockAlertMessage message) throws MessagingException, UnsupportedEncodingException {
         String subject = buildSubject(message);
         String body    = buildHtmlBody(message);
@@ -63,9 +54,6 @@ public class EmailService {
                 message.getUserEmail(), message.getDisplaySymbol(), message.getAlertType());
     }
 
-    // =========================================================================
-    // Subject line
-    // =========================================================================
 
     private String buildSubject(StockAlertMessage m) {
         if ("UPPER".equals(m.getAlertType())) {
@@ -77,36 +65,25 @@ public class EmailService {
         }
     }
 
-    // =========================================================================
-    // HTML body
-    // =========================================================================
 
-    /**
-     * Builds a fully inline-styled HTML email.
-     *
-     * <p>Strategy: pre-compute <em>all</em> dynamic display strings first, then
-     * substitute them into the template with {@code %s} only.  This keeps the
-     * template readable and eliminates any risk of {@code BigDecimal.toString()}
-     * returning characters (like 'E') that could confuse a {@code %.2f} specifier.
-     */
     private String buildHtmlBody(StockAlertMessage m) {
 
-        // ── Boolean flags ──────────────────────────────────────────────────────
+        // ── Boolean flags
         boolean isUpper = "UPPER".equals(m.getAlertType());
         boolean isGain  = m.isGain();
 
-        // ── Header styling ─────────────────────────────────────────────────────
+        // ── Header styling
         String headerBg    = isUpper ? "#e65c00" : "#b71c1c";
         String headerTitle = isUpper ? "📈 UPPER THRESHOLD CROSSED" : "📉 LOWER THRESHOLD CROSSED";
         String headerSub   = m.getCompanyName() + " has "
                            + (isUpper ? "risen above your upper threshold"
                                       : "fallen below your lower threshold");
 
-        // ── P&L colour / symbol ────────────────────────────────────────────────
+        // ── P&L colour / symbol
         String plColor = isGain ? "#1b5e20" : "#b71c1c";
         String plEmoji = isGain ? "✅" : "❌";
 
-        // ── Pre-formatted display strings ──────────────────────────────────────
+        // ── Pre-formatted display strings
         String alertTypeLabel = (isUpper ? "Upper" : "Lower") + " threshold ("
                 + (isUpper ? "▲ +" : "▼ -") + m.getThresholdPercent() + "%)";
 
@@ -131,7 +108,6 @@ public class EmailService {
                 ? m.getAlertGeneratedAt().format(DISPLAY_FORMAT) + " IST"
                 : "—";
 
-        // ── Template ───────────────────────────────────────────────────────────
         // Only %s placeholders used — no risk of format-specifier collision.
         return """
                 <!DOCTYPE html>
@@ -238,21 +214,14 @@ public class EmailService {
                         row("Buying Price",   buyPriceStr),
                         row("Investment",     investStr),
                         row("Current Value",  curValueStr),
-                        // P&L
+
                         plColor, plStr,
                         // Footer
                         alertedAt
                 );
     }
 
-    // =========================================================================
-    // Helpers
-    // =========================================================================
 
-    /**
-     * Builds the current-price display string with its % deviation from the
-     * reference price in parentheses, e.g. {@code ₹2600.00 (+6.10% from ref)}.
-     */
     private static String buildCurrentPriceStr(StockAlertMessage m) {
         String base = "₹" + m.getCurrentPrice();
         if (m.getReferencePrice() == null || m.getReferencePrice().compareTo(BigDecimal.ZERO) == 0) {
@@ -267,10 +236,6 @@ public class EmailService {
         return base + " <span style=\"color:#757575;font-size:12px;\">(" + sign + pct + "% from ref)</span>";
     }
 
-    /**
-     * Renders a label / value table row with consistent padding and typography.
-     * Only {@code %s} placeholders are used to avoid escaping issues.
-     */
     private static String row(String label, String value) {
         return """
                <tr>

@@ -27,16 +27,15 @@ public class StockAlertMessage implements Serializable {
     //  Threshold details
     private String alertType;
 
-    /** The configured threshold percentage (e.g. 5.00 = 5 %). */
+
     private BigDecimal thresholdPercent;
 
-    /** Market price captured when the threshold was last saved. */
+
     private BigDecimal referencePrice;
 
-    /** Absolute price level that triggered the alert (upper or lower). */
     private BigDecimal alertPrice;
 
-    /** Current live market price at alert-generation time. */
+
     private BigDecimal currentPrice;
 
     //  Portfolio context

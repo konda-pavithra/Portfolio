@@ -13,8 +13,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class PortfolioEntry {
 
-    private String     symbol;        // Yahoo Finance symbol: "RELIANCE.NS"
-    private String     displaySymbol; // Exchange-only ticker:  "RELIANCE"
+    private String     symbol;
+    private String     displaySymbol;
     private String     companyName;
     private Integer    quantity;
     private BigDecimal buyingPrice;
