@@ -14,7 +14,11 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class ThresholdRequest {
 
+    // 5.0 means "alert me if the price rises 5% above the reference price"
+    @Schema(description = "Alert when price rises this % above the reference price", example = "5.0")
     private BigDecimal upperThresholdPercent;
 
+    // 3.0 means "alert me if the price falls 3% below the reference price"
+    @Schema(description = "Alert when price falls this % below the reference price", example = "3.0")
     private BigDecimal lowerThresholdPercent;
 }
