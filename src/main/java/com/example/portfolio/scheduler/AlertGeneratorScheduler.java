@@ -105,7 +105,7 @@ public class AlertGeneratorScheduler {
         String username = threshold.getUser().getUsername();
         String symbol   = threshold.getSymbol();
 
-        // Current price 
+        // Current price
         StockQuote quote = priceMap.get(symbol);
         if (quote == null || quote.getPrice() == 0.0) {
             logger.debug("No price data for '{}' — skipping", symbol);

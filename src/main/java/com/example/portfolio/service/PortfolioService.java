@@ -238,6 +238,8 @@ public class PortfolioService {
 
 
 
+    // Parses the Excel file and classifies each row as new, update, or invalid — nothing is saved yet.
+    // The frontend shows this preview to the user before they confirm.
     @Transactional(readOnly = true)
     public PortfolioUploadPreview previewUpload(MultipartFile file, String username) {
         logger.info("Portfolio upload initiated by user '{}' — file: '{}'",

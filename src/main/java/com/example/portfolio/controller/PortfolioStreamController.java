@@ -2,7 +2,9 @@ package com.example.portfolio.controller;
 
 import com.example.portfolio.service.PortfolioRealtimeService;
 import com.example.portfolio.dto.PortfolioRealtimeResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-
+// SSE endpoint — JWT is passed as ?token=<jwt> query param because EventSource
+// doesn't support custom headers.
+@Tag(name = "Portfolio Stream", description = "Real-time portfolio updates over SSE")
 @SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/portfolio/stream")
@@ -32,6 +36,7 @@ public class PortfolioStreamController {
     }
 
 
+    @Operation(summary = "Stream live portfolio valuation updates (SSE)")
     @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamPortfolio(Authentication authentication) {
         String username = authentication.getName();
@@ -41,6 +46,7 @@ public class PortfolioStreamController {
     }
 
 
+    @Operation(summary = "Get a one-time real-time portfolio snapshot")
     @GetMapping(value = "/snapshot", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PortfolioRealtimeResponse> getSnapshot(Authentication authentication) {
         String username = authentication.getName();

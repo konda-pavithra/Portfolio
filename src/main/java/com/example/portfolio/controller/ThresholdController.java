@@ -3,8 +3,10 @@ package com.example.portfolio.controller;
 import com.example.portfolio.service.ThresholdService;
 import com.example.portfolio.dto.ThresholdRequest;
 import com.example.portfolio.dto.ThresholdResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// Manages price-alert thresholds. PUT creates or overwrites; the scheduler picks them up
+// and sends an email when the live price crosses the upper or lower band.
+@Tag(name = "Thresholds", description = "Price alert thresholds for your holdings")
 @SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/thresholds")
@@ -27,8 +32,10 @@ public class ThresholdController {
     }
 
 
+    @Operation(summary = "Set an upper/lower price alert for a stock (creates or overwrites)")
     @PutMapping("/{symbol}")
     public ResponseEntity<ThresholdResponse> setThreshold(
+            @Parameter(description = "Stock ticker or company name", example = "TCS")
             @PathVariable String symbol,
             @RequestBody ThresholdRequest request,
             Authentication authentication) {
@@ -50,6 +57,7 @@ public class ThresholdController {
     }
 
 
+    @Operation(summary = "Get all your price alerts")
     @GetMapping
     public ResponseEntity<List<ThresholdResponse>> getAllThresholds(Authentication authentication) {
         String username = authentication.getName();
@@ -62,8 +70,10 @@ public class ThresholdController {
     }
 
 
+    @Operation(summary = "Get the price alert for a specific stock")
     @GetMapping("/{symbol}")
     public ResponseEntity<ThresholdResponse> getThreshold(
+            @Parameter(description = "Stock ticker or company name", example = "TCS")
             @PathVariable String symbol,
             Authentication authentication) {
 
@@ -82,8 +92,10 @@ public class ThresholdController {
     }
 
 
+    @Operation(summary = "Remove a price alert")
     @DeleteMapping("/{symbol}")
     public ResponseEntity<Void> deleteThreshold(
+            @Parameter(description = "Stock ticker or company name", example = "TCS")
             @PathVariable String symbol,
             Authentication authentication) {
 

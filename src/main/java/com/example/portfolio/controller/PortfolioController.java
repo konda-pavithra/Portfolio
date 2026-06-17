@@ -2,8 +2,11 @@ package com.example.portfolio.controller;
 
 import com.example.portfolio.service.PortfolioService;
 import com.example.portfolio.dto.*;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -15,6 +18,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+// Manages the authenticated user's Nifty 50 portfolio.
+// Upload flow is two-step: POST /upload returns a preview, then POST /confirm applies it.
+@Tag(name = "Portfolio", description = "Manage your Nifty 50 stock holdings")
 @SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/portfolio")
@@ -29,7 +35,7 @@ public class PortfolioController {
     }
 
 
-
+    @Operation(summary = "List all tradeable Nifty 50 stocks")
     @GetMapping("/stocks")
     public ResponseEntity<List<NseStockInfo>> getNiftyStockList(Authentication authentication) {
         logger.info("GET /api/portfolio/stocks — user '{}'", authentication.getName());
@@ -39,6 +45,8 @@ public class PortfolioController {
     }
 
 
+    @Operation(summary = "Add a stock to your portfolio")
+    @ApiResponse(responseCode = "409", description = "Stock already in portfolio — existing holding included in response body")
     @PostMapping("/add")
     public ResponseEntity<PortfolioResponse> addStock(
             @RequestBody AddStockRequest request,
@@ -56,6 +64,7 @@ public class PortfolioController {
     }
 
 
+    @Operation(summary = "Update quantity or buying price of an existing holding")
     @PutMapping("/{symbol}")
     public ResponseEntity<PortfolioResponse> updateHolding(
             @Parameter(description = "Stock ticker or company name", example = "RELIANCE")
@@ -74,7 +83,7 @@ public class PortfolioController {
     }
 
 
-
+    @Operation(summary = "Remove a stock from your portfolio")
     @DeleteMapping("/{symbol}")
     public ResponseEntity<Void> removeHolding(
             @Parameter(description = "Stock ticker or company name", example = "INFY")
@@ -91,6 +100,7 @@ public class PortfolioController {
     }
 
 
+    @Operation(summary = "Get full portfolio valuation with live P&L")
     @GetMapping("/valuation")
     public ResponseEntity<PortfolioValuationResponse> getValuation(Authentication authentication) {
         String username = authentication.getName();
@@ -110,7 +120,10 @@ public class PortfolioController {
         return ResponseEntity.ok(valuation);
     }
 
-    //Symbol, Quantity, Buying Price
+
+    // Step 1 of 2 — parse the Excel file and return a dry-run preview without saving anything.
+    // Expected columns: Symbol, Quantity, Buying Price.
+    @Operation(summary = "Parse an Excel file and preview what will change")
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PortfolioUploadPreview> uploadPortfolio(
             @RequestParam("file") MultipartFile file,
@@ -132,6 +145,8 @@ public class PortfolioController {
     }
 
 
+    // Step 2 of 2 — user reviewed the preview, now apply it.
+    @Operation(summary = "Apply the changes from a previous upload preview")
     @PostMapping("/confirm")
     public ResponseEntity<PortfolioConfirmResponse> confirmPortfolio(
             @RequestBody PortfolioConfirmRequest request,
@@ -150,6 +165,7 @@ public class PortfolioController {
     }
 
 
+    @Operation(summary = "Get all your current holdings")
     @GetMapping
     public ResponseEntity<List<PortfolioResponse>> getPortfolio(Authentication authentication) {
         String username = authentication.getName();
