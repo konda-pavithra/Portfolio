@@ -1,5 +1,6 @@
 package com.example.portfolio.service;
 
+import com.example.portfolio.dto.GoogleAuthRequest;
 import com.example.portfolio.dto.LoginRequest;
 import com.example.portfolio.dto.LoginResponse;
 import com.example.portfolio.dto.RegistrationRequest;
@@ -14,25 +15,42 @@ import com.example.portfolio.util.JwtUtil;
 import com.example.portfolio.validator.InputValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+    private static final String GOOGLE_TOKENINFO_URL =
+            "https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=";
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final RestTemplate restTemplate;
+
+    // Not needed for access_token verification — Google validates the token issuer itself
+    // Kept for future ID-token support if needed
+    @Value("${google.client.id:}")
+    private String googleClientId;
 
     public UserService(UserRepository userRepository,
                        BCryptPasswordEncoder passwordEncoder,
-                       JwtUtil jwtUtil) {
+                       JwtUtil jwtUtil,
+                       @Qualifier("googleRestTemplate") RestTemplate restTemplate) {
         this.userRepository  = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil         = jwtUtil;
+        this.restTemplate    = restTemplate;
     }
 
 
@@ -141,5 +159,86 @@ public class UserService {
                 .expiresInMs(jwtUtil.getExpirationMs())
                 .message("Login successful")
                 .build();
+    }
+
+
+    @Transactional
+    public LoginResponse googleLogin(GoogleAuthRequest request) {
+        if (request.getAccessToken() == null || request.getAccessToken().isBlank()) {
+            throw new IllegalArgumentException("Google access token must not be blank");
+        }
+
+        // Verify token with Google and extract claims
+        Map<String, String> claims = verifyGoogleToken(request.getAccessToken());
+
+        String email = claims.get("email");
+        String name  = claims.get("name");
+
+        if (email == null || email.isBlank()) {
+            throw new InvalidCredentialsException("Google token does not contain a valid email");
+        }
+
+        logger.info("Google login — verified token for email '{}'", email);
+
+        // Find existing user by email, or auto-register them
+        User user = userRepository.findByEmail(email).orElseGet(() -> {
+            // Derive a unique username from the email prefix
+            String base     = email.split("@")[0].replaceAll("[^A-Za-z0-9_]", "_");
+            String username = userRepository.existsByUsername(base)
+                    ? base + "_" + UUID.randomUUID().toString().substring(0, 6)
+                    : base;
+
+            logger.info("Google login — new user, registering '{}' ({})", username, email);
+
+            User newUser = User.builder()
+                    .username(username)
+                    .email(email)
+                    // Google users never log in with a password; store an unusable placeholder
+                    .password(passwordEncoder.encode(UUID.randomUUID().toString()))
+                    .build();
+            return userRepository.save(newUser);
+        });
+
+        String token = jwtUtil.generateToken(user.getUsername());
+
+        logger.info("Google login successful — JWT issued for username '{}' ({})",
+                user.getUsername(), email);
+
+        return LoginResponse.builder()
+                .username(user.getUsername())
+                .token(token)
+                .tokenType("Bearer")
+                .expiresInMs(jwtUtil.getExpirationMs())
+                .message("Google login successful")
+                .build();
+    }
+
+
+    @SuppressWarnings("unchecked")
+    private Map<String, String> verifyGoogleToken(String idToken) {
+        try {
+            ResponseEntity<Map> response = restTemplate.getForEntity(
+                    GOOGLE_TOKENINFO_URL + idToken, Map.class);
+
+            if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+                throw new InvalidCredentialsException("Google token verification failed");
+            }
+
+            Map<String, String> claims = (Map<String, String>) response.getBody();
+
+            // Verify the token is actually tied to a verified email
+            String verifiedEmail = claims.get("verified_email");
+            if (!"true".equals(verifiedEmail)) {
+                throw new InvalidCredentialsException("Google account email is not verified");
+            }
+
+            return claims;
+
+        } catch (InvalidCredentialsException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error("Google token verification error: {}", e.getMessage());
+            throw new InvalidCredentialsException("Invalid or expired Google token");
+        }
     }
 }

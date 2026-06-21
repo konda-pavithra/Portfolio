@@ -53,6 +53,7 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/users/register",
                     "/api/users/login",
+                    "/api/users/google",
                     // Swagger UI / OpenAPI — no JWT required
                     "/swagger-ui/**",
                     "/swagger-ui.html",

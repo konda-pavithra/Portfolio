@@ -22,4 +22,12 @@ public class RestTemplateConfig {
         factory.setReadTimeout(readTimeoutMs);
         return new RestTemplate(factory);
     }
+
+    @Bean("googleRestTemplate")
+    public RestTemplate googleRestTemplate() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(5000);
+        factory.setReadTimeout(10000);
+        return new RestTemplate(factory);
+    }
 }

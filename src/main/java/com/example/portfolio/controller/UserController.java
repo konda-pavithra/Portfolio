@@ -2,6 +2,7 @@ package com.example.portfolio.controller;
 
 
 import com.example.portfolio.service.UserService;
+import com.example.portfolio.dto.GoogleAuthRequest;
 import com.example.portfolio.dto.LoginRequest;
 import com.example.portfolio.dto.LoginResponse;
 import com.example.portfolio.dto.RegistrationRequest;
@@ -55,6 +56,17 @@ public class UserController {
         LoginResponse response = userService.login(request);
         logger.info("POST /api/users/login — login successful for username: '{}'",
                 request.getUsername());
+        return ResponseEntity.ok(response);
+    }
+
+
+    @Operation(summary = "Login or register using a Google ID token")
+    @PostMapping("/google")
+    public ResponseEntity<LoginResponse> googleLogin(@RequestBody GoogleAuthRequest request) {
+        logger.info("POST /api/users/google — Google login attempt");
+        LoginResponse response = userService.googleLogin(request);
+        logger.info("POST /api/users/google — login successful for username '{}'",
+                response.getUsername());
         return ResponseEntity.ok(response);
     }
 }
