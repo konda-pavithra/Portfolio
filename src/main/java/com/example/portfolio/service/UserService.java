@@ -17,6 +17,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,8 +33,8 @@ import java.util.UUID;
 public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
-    private static final String GOOGLE_TOKENINFO_URL =
-            "https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=";
+    private static final String GOOGLE_USERINFO_URL =
+            "https://www.googleapis.com/oauth2/v3/userinfo";
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -169,10 +172,10 @@ public class UserService {
         }
 
         // Verify token with Google and extract claims
-        Map<String, String> claims = verifyGoogleToken(request.getAccessToken());
+        Map<String, Object> claims = verifyGoogleToken(request.getAccessToken());
 
-        String email = claims.get("email");
-        String name  = claims.get("name");
+        String email = (String) claims.get("email");
+        String name  = (String) claims.get("name");
 
         if (email == null || email.isBlank()) {
             throw new InvalidCredentialsException("Google token does not contain a valid email");
@@ -215,20 +218,25 @@ public class UserService {
 
 
     @SuppressWarnings("unchecked")
-    private Map<String, String> verifyGoogleToken(String idToken) {
+    private Map<String, Object> verifyGoogleToken(String accessToken) {
         try {
-            ResponseEntity<Map> response = restTemplate.getForEntity(
-                    GOOGLE_TOKENINFO_URL + idToken, Map.class);
+            // Call Google's userinfo endpoint with the access token as a Bearer header
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(accessToken);
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    GOOGLE_USERINFO_URL, HttpMethod.GET, entity, Map.class);
 
             if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
                 throw new InvalidCredentialsException("Google token verification failed");
             }
 
-            Map<String, String> claims = (Map<String, String>) response.getBody();
+            Map<String, Object> claims = (Map<String, Object>) response.getBody();
 
-            // Verify the token is actually tied to a verified email
-            String verifiedEmail = claims.get("verified_email");
-            if (!"true".equals(verifiedEmail)) {
+            // email_verified is a JSON boolean — compare as Boolean, not String
+            Object emailVerified = claims.get("email_verified");
+            if (!Boolean.TRUE.equals(emailVerified)) {
                 throw new InvalidCredentialsException("Google account email is not verified");
             }
 
@@ -238,7 +246,7 @@ public class UserService {
             throw e;
         } catch (Exception e) {
             logger.error("Google token verification error: {}", e.getMessage());
-            throw new InvalidCredentialsException("Invalid or expired Google token");
+            throw new InvalidCredentialsException("Google sign-in failed: " + e.getMessage());
         }
     }
 }
