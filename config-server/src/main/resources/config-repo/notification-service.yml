@@ -1,0 +1,30 @@
+server:
+  port: 8085
+
+spring:
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    template:
+      default-receive-queue: stock.alerts.queue
+
+  # ── Email (SMTP) ─────────────────────────────────────────────────────────────
+  # Replace with your SMTP provider credentials before running.
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:pavithraashok2796@gmail.com}
+    password: ${SMTP_PASSWORD:tnuj yenl qlkb elmv}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+alert:
+  mail:
+    from-name: Stock Price Alerts

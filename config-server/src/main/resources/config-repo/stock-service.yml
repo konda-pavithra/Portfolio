@@ -1,0 +1,25 @@
+server:
+  port: 8082
+
+# Stock Ticker
+stock:
+  refresh:
+    interval-ms: 30000
+    initial-delay-ms: 5000
+  client:
+    connect-timeout-ms: 10000
+    read-timeout-ms: 30000
+
+# ── Kafka ─────────────────────────────────────────────────────────────────────
+spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      client-id: stock-price-producer
+      acks: "1"
+
+kafka:
+  topic:
+    stock-prices: stock.prices
+    partitions: 3
+    replication-factor: 1

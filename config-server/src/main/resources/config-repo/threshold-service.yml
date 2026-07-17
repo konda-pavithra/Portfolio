@@ -1,0 +1,45 @@
+server:
+  port: 8084
+
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:postgres}?currentSchema=threshold_service
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:root}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        default_schema: threshold_service
+
+  # ── Kafka consumer (stock.prices, produced by stock-service) ─────────────────
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: threshold-service-group
+      auto-offset-reset: latest
+
+  # ── RabbitMQ producer (alerts consumed by notification-service) ──────────────
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+kafka:
+  topic:
+    stock-prices: stock.prices
+
+# ── Price-alert scheduler ─────────────────────────────────────────────────────
+alert:
+  check-interval-ms: 60000
+  check-initial-delay-ms: 35000
+  cooldown-hours: 4
+
+portfolio-service:
+  name: portfolio-service
